@@ -1,4 +1,5 @@
 {
+  "\u0000plugin-vue:export-helper": [],
   "\u0000vite/modulepreload-polyfill.js": [],
   "\u0000vite/preload-helper.js": [],
   "index.html": [],
@@ -17,26 +18,34 @@
   "node_modules/lucide-vue-next/dist/esm/createLucideIcon.js": [],
   "node_modules/lucide-vue-next/dist/esm/defaultAttributes.js": [],
   "node_modules/lucide-vue-next/dist/esm/icons/arrow-left.js": [
-    "/assets/Post-BKzThhpJ.js"
+    "./assets/Post-CAZRmXKf.js"
   ],
   "node_modules/lucide-vue-next/dist/esm/icons/arrow-right.js": [
-    "/assets/Home-DZVT_Xwx.js"
+    "./assets/Home-XYkbpuji.js"
   ],
   "node_modules/lucide-vue-next/dist/esm/icons/bookmark.js": [
-    "/assets/Post-BKzThhpJ.js"
+    "./assets/Post-CAZRmXKf.js"
   ],
   "node_modules/lucide-vue-next/dist/esm/icons/clock.js": [
-    "/assets/Post-BKzThhpJ.js"
+    "./assets/Post-CAZRmXKf.js"
   ],
+  "node_modules/lucide-vue-next/dist/esm/icons/download.js": [],
   "node_modules/lucide-vue-next/dist/esm/icons/github.js": [],
+  "node_modules/lucide-vue-next/dist/esm/icons/info.js": [],
+  "node_modules/lucide-vue-next/dist/esm/icons/keyboard.js": [],
   "node_modules/lucide-vue-next/dist/esm/icons/moon.js": [],
+  "node_modules/lucide-vue-next/dist/esm/icons/rotate-ccw.js": [],
+  "node_modules/lucide-vue-next/dist/esm/icons/settings.js": [],
   "node_modules/lucide-vue-next/dist/esm/icons/share-2.js": [
-    "/assets/Post-BKzThhpJ.js"
+    "./assets/Post-CAZRmXKf.js"
   ],
   "node_modules/lucide-vue-next/dist/esm/icons/sun.js": [],
   "node_modules/lucide-vue-next/dist/esm/icons/tag.js": [
-    "/assets/Home-DZVT_Xwx.js"
+    "./assets/Home-XYkbpuji.js"
   ],
+  "node_modules/lucide-vue-next/dist/esm/icons/volume-2.js": [],
+  "node_modules/lucide-vue-next/dist/esm/icons/volume-x.js": [],
+  "node_modules/lucide-vue-next/dist/esm/icons/x.js": [],
   "node_modules/lucide-vue-next/dist/esm/shared/src/utils.js": [],
   "node_modules/pinia/dist/pinia.mjs": [],
   "node_modules/unhead/dist/index.mjs": [],
@@ -47,23 +56,30 @@
   "node_modules/vue-router/dist/vue-router.mjs": [],
   "src/App.vue?vue&type=script&setup=true&lang.ts": [],
   "src/App.vue?vue&type=style&index=0&lang.css": [],
+  "src/components/ui/SettingsPanel.vue": [],
+  "src/components/ui/SettingsPanel.vue?vue&type=script&setup=true&lang.ts": [],
+  "src/components/ui/SettingsPanel.vue?vue&type=style&index=0&scoped=23171346&lang.css": [],
+  "src/composables/useAudio.ts": [],
   "src/composables/useTheme.ts": [],
   "src/index.css": [],
   "src/main.ts": [],
   "src/router.ts": [],
   "src/stores/posts.ts": [
-    "/assets/posts-Cf5Yp8sE.js"
+    "./assets/posts-BzZAbPUN.js"
   ],
+  "src/stores/settings.ts": [],
+  "src/stores/stats.ts": [],
+  "src/utils/constants.ts": [],
   "src/views/Home.vue": [
-    "/assets/Home-DZVT_Xwx.js"
+    "./assets/Home-XYkbpuji.js"
   ],
   "src/views/Home.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Home-DZVT_Xwx.js"
+    "./assets/Home-XYkbpuji.js"
   ],
   "src/views/Post.vue": [
-    "/assets/Post-BKzThhpJ.js"
+    "./assets/Post-CAZRmXKf.js"
   ],
   "src/views/Post.vue?vue&type=script&setup=true&lang.ts": [
-    "/assets/Post-BKzThhpJ.js"
+    "./assets/Post-CAZRmXKf.js"
   ]
 }

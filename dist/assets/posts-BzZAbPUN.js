@@ -1,4 +1,4 @@
-import{l as n,m as a}from"./app-CAn_wCQj.js";const o=n("posts",()=>{const e=a([{id:"mastering-ssg",title:"Mastering Static Site Generation",excerpt:"How SSG is redefining performance on the modern web.",date:"Oct 12, 2025",category:"Engineering",readTime:"8 min read",author:"M. Kazi",content:`
+import{l as n,m as a}from"./app-CXiOTy94.js";const o=n("posts",()=>{const e=a([{id:"mastering-ssg",title:"Mastering Static Site Generation",excerpt:"How SSG is redefining performance on the modern web.",date:"Oct 12, 2025",category:"Engineering",readTime:"8 min read",author:"M. Kazi",content:`
         <p>Static Site Generation (SSG) has evolved from simple HTML emitters to sophisticated, hydration-aware build engines. In 2026, the boundary between static and dynamic is blurring.</p>
         <h2>The Performance Mandate</h2>
         <p>Modern users expect instant interactions. Pre-rendering the critical path ensures that the Initial Meaningful Paint happens within milliseconds, while subsequent client-side navigation feels native.</p>

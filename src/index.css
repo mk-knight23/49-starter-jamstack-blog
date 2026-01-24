@@ -9,24 +9,39 @@
     --editorial-primary: #1a1a1a;
     --editorial-accent: #3b82f6;
     --editorial-muted: #737373;
+    --app-bg-light: #ffffff;
+    --app-bg-dark: #0a0a0a;
+    color-scheme: light dark;
   }
 
   .light {
     --editorial-bg: #ffffff;
     --editorial-primary: #1a1a1a;
     --editorial-muted: #737373;
+    color-scheme: light;
   }
 
   .dark {
     --editorial-bg: #0a0a0a;
     --editorial-primary: #ffffff;
     --editorial-muted: #a1a1aa;
+    color-scheme: dark;
   }
 
   body {
     @apply antialiased selection:bg-editorial-accent selection:text-white transition-colors duration-300;
     font-family: 'Inter', system-ui, sans-serif;
     margin: 0;
+    background-color: var(--editorial-bg);
+    color: var(--editorial-primary);
+  }
+
+  body.dark {
+    background-color: var(--editorial-bg);
+    color: var(--editorial-primary);
+  }
+
+  body.light {
     background-color: var(--editorial-bg);
     color: var(--editorial-primary);
   }
@@ -71,6 +86,10 @@
   }
 }
 
+kbd {
+  @apply px-2 py-1 text-xs font-mono bg-slate-200 dark:bg-slate-700 rounded;
+}
+
 /* Smooth transitions */
 * {
   transition-property: background-color, border-color, color;
@@ -95,4 +114,18 @@ a:focus-visible {
 
 ::-webkit-scrollbar-thumb {
   @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+}
+
+.reduce-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

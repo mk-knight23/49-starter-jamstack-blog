@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { useHead } from '@vueuse/head'
 import { useTheme } from '@/composables/useTheme'
-import { Sun, Moon, Github } from 'lucide-vue-next'
+import SettingsPanel from './components/ui/SettingsPanel.vue'
+import { useSettingsStore } from './stores/settings'
+import { useStatsStore } from './stores/stats'
+import { useAudio } from './composables/useAudio'
+import { Sun, Moon, Github, Info } from 'lucide-vue-next'
 
 useHead({
   title: 'Editorial | Modern SSG Blog',
@@ -11,10 +15,22 @@ useHead({
 })
 
 const { isDark, toggleTheme } = useTheme()
+const settingsStore = useSettingsStore()
+const statsStore = useStatsStore()
+const audio = useAudio()
+
+function openSettings() {
+  audio.playClick()
+  statsStore.recordSettingsOpen()
+}
+
+function recordClick() {
+  statsStore.recordClick()
+}
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div class="min-h-screen flex flex-col" :class="{ 'dark': settingsStore.isDarkMode, 'light': !settingsStore.isDarkMode }">
     <!-- Main Navigation -->
     <nav
       class="h-24 border-b border-slate-100 dark:border-white/5 flex items-center px-10 justify-between sticky top-0 z-50 transition-colors duration-300"
@@ -37,10 +53,22 @@ const { isDark, toggleTheme } = useTheme()
        </div>
 
        <div class="flex items-center space-x-6">
+          <!-- Settings Button -->
+          <button
+            @click="openSettings"
+            @click.capture="recordClick"
+            class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="Settings"
+            :title="settingsStore.themeLabel + ' Mode'"
+          >
+            <Info :size="20" class="text-slate-600 dark:text-slate-400" />
+          </button>
+
           <!-- Theme Toggle -->
           <button
-            @click="toggleTheme()"
-            class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+            @click="toggleTheme"
+            @click.capture="recordClick"
+            class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
             :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
             :title="isDark ? 'Light mode' : 'Dark mode'"
           >
@@ -60,7 +88,8 @@ const { isDark, toggleTheme } = useTheme()
           </a>
 
           <button
-            class="text-xs font-black uppercase tracking-widest bg-editorial-accent text-white px-6 py-2.5 rounded-full hover:scale-105 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-editorial-accent"
+            @click="recordClick"
+            class="text-xs font-black uppercase tracking-widest bg-editorial-accent text-white px-6 py-2.5 rounded-full hover:scale-105 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-editorial-accent cursor-pointer"
           >
             Subscribe
           </button>
@@ -80,7 +109,7 @@ const { isDark, toggleTheme } = useTheme()
     <footer class="py-20 px-10 border-t border-slate-100 dark:border-white/5 transition-colors duration-300">
        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
           <p class="text-[10px] font-black uppercase tracking-[0.4em] italic" :class="isDark ? 'text-slate-600' : 'text-editorial-muted'">
-            Production Grade SSG Architecture
+             Production Grade SSG Architecture
           </p>
           <div class="flex gap-10 text-[10px] font-black uppercase tracking-widest">
              <a href="#" class="hover:text-editorial-accent transition-colors">Privacy</a>
@@ -89,6 +118,8 @@ const { isDark, toggleTheme } = useTheme()
           </div>
        </div>
     </footer>
+
+    <SettingsPanel />
   </div>
 </template>
 
@@ -101,5 +132,9 @@ const { isDark, toggleTheme } = useTheme()
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+kbd {
+  @apply px-2 py-1 text-xs font-mono bg-slate-200 dark:bg-slate-700 rounded;
 }
 </style>
