@@ -2,32 +2,97 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --primary: #1a1a1a;
+@layer base {
+  :root {
+    --editorial-bg: #ffffff;
+    --editorial-dark: #0a0a0a;
+    --editorial-primary: #1a1a1a;
+    --editorial-accent: #3b82f6;
+    --editorial-muted: #737373;
+  }
+
+  .light {
+    --editorial-bg: #ffffff;
+    --editorial-primary: #1a1a1a;
+    --editorial-muted: #737373;
+  }
+
+  .dark {
+    --editorial-bg: #0a0a0a;
+    --editorial-primary: #ffffff;
+    --editorial-muted: #a1a1aa;
+  }
+
+  body {
+    @apply antialiased selection:bg-editorial-accent selection:text-white transition-colors duration-300;
+    font-family: 'Inter', system-ui, sans-serif;
+    margin: 0;
+    background-color: var(--editorial-bg);
+    color: var(--editorial-primary);
+  }
 }
 
-body {
-  @apply bg-editorial-bg text-editorial-primary antialiased selection:bg-editorial-accent selection:text-white transition-colors duration-500;
-  font-family: 'Inter', system-ui, sans-serif;
-  margin: 0;
+@layer components {
+  .nav-link {
+    @apply text-xs font-black uppercase tracking-[0.2em] transition-colors;
+    color: var(--editorial-muted);
+  }
+
+  .nav-link:hover {
+    color: var(--editorial-primary);
+  }
+
+  .dark .nav-link {
+    color: #a1a1aa;
+  }
+
+  .dark .nav-link:hover {
+    color: #ffffff;
+  }
 }
 
-.dark body {
-  @apply bg-editorial-dark text-white;
+@layer utilities {
+  .prose h1, .prose h2, .prose h3 {
+    @apply font-serif font-black tracking-tight;
+  }
+
+  .prose p {
+    @apply leading-relaxed text-lg;
+    color: #52525b;
+  }
+
+  .dark .prose p {
+    color: #a1a1aa;
+  }
+
+  .prose a {
+    @apply no-underline hover:underline;
+    color: var(--editorial-accent);
+  }
 }
 
-.prose h1, .prose h2, .prose h3 {
-  @apply font-serif font-black tracking-tight;
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
 }
 
-.prose p {
-  @apply leading-relaxed text-lg text-slate-600 dark:text-slate-400;
+/* Focus styles */
+button:focus-visible,
+a:focus-visible {
+  @apply outline-none ring-2 ring-editorial-accent ring-offset-2;
 }
 
-.prose a {
-  @apply text-editorial-accent no-underline hover:underline;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
 }
 
-.nav-link {
-  @apply text-xs font-black uppercase tracking-[0.2em] text-editorial-muted hover:text-editorial-primary transition-colors;
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
 }

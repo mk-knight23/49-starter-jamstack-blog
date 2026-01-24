@@ -1,62 +1,90 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { usePostsStore } from '@/stores/posts'
+import { useTheme } from '@/composables/useTheme'
 import { ArrowLeft, Clock, Share2, Bookmark } from 'lucide-vue-next'
 
-const props = defineProps<{ id: string }>()
+const route = useRoute()
+const router = useRouter()
+const store = usePostsStore()
+const { isDark } = useTheme()
 
-const post = ref({
-  title: 'Mastering Static Site Generation',
-  author: 'M. Kazi',
-  date: 'Oct 12, 2025',
-  readTime: '8 min read',
-  content: `
-    <p>Static Site Generation (SSG) has evolved from simple HTML emitters to sophisticated, hydration-aware build engines. In 2026, the boundary between static and dynamic is blurring.</p>
-    <h2>The Performance Mandate</h2>
-    <p>Modern users expect instant interactions. Pre-rendering the critical path ensures that the Initial Meaningful Paint happens within milliseconds, while subsequent client-side navigation feels native.</p>
-    <blockquote>"The fastest request is the one that never leaves the edge."</blockquote>
-    <p>By leveraging Vite-SSG, we distribute processed HTML to global CDNs, reducing Time to First Byte (TTFB) to negligible levels.</p>
-  `
-})
+const post = computed(() => store.getPostById(route.params.id as string))
+
+const goBack = () => router.push('/')
 </script>
 
 <template>
-  <article class="max-w-4xl mx-auto px-10 py-24 space-y-12">
-    <router-link to="/" class="inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-editorial-primary transition-colors">
+  <article v-if="post" class="max-w-4xl mx-auto px-10 py-24 space-y-12" role="article">
+    <router-link
+      to="/"
+      class="inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] transition-colors hover:text-editorial-accent"
+      :class="isDark ? 'text-slate-500' : 'text-slate-400'"
+    >
        <ArrowLeft class="mr-2" :size="14" /> Back to Journal
     </router-link>
 
     <header class="space-y-8">
        <div class="flex items-center space-x-4 text-[10px] font-black uppercase tracking-widest text-editorial-accent">
-          <span>Engineering</span>
-          <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
-          <span class="flex items-center gap-1.5"><Clock :size="12" /> {{ post.readTime }}</span>
+          <span>{{ post.category }}</span>
+          <span class="w-1 h-1 rounded-full" :class="isDark ? 'bg-slate-600' : 'bg-slate-300'"></span>
+          <span class="flex items-center gap-1.5">
+            <Clock :size="12" /> {{ post.readTime }}
+          </span>
        </div>
        <h1 class="text-6xl md:text-8xl font-serif font-black tracking-tighter leading-[0.9]">
           {{ post.title }}
        </h1>
-       <div class="flex items-center justify-between py-8 border-y border-slate-100 dark:border-white/5">
+       <div class="flex items-center justify-between py-8 border-y transition-colors duration-300" :class="isDark ? 'border-white/5' : 'border-slate-100'">
           <div class="flex items-center space-x-4">
-             <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800"></div>
+             <div class="w-10 h-10 rounded-full" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
              <div>
                 <p class="text-xs font-black uppercase tracking-tight">{{ post.author }}</p>
-                <p class="text-[10px] text-slate-500 font-bold uppercase">{{ post.date }}</p>
+                <p class="text-[10px] uppercase tracking-wider" :class="isDark ? 'text-slate-600' : 'text-slate-500'">{{ post.date }}</p>
              </div>
           </div>
-          <div class="flex items-center space-x-4 text-slate-400">
-             <button class="p-2 hover:text-editorial-primary transition-colors"><Share2 :size="18" /></button>
-             <button class="p-2 hover:text-editorial-primary transition-colors"><Bookmark :size="18" /></button>
+          <div class="flex items-center space-x-4" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
+             <button
+               class="p-2 hover:text-editorial-accent transition-colors"
+               aria-label="Share post"
+             >
+               <Share2 :size="18" />
+             </button>
+             <button
+               class="p-2 hover:text-editorial-accent transition-colors"
+               aria-label="Bookmark post"
+             >
+               <Bookmark :size="18" />
+             </button>
           </div>
        </div>
     </header>
 
-    <div class="prose prose-slate dark:prose-invert max-w-none" v-html="post.content"></div>
+    <div
+      class="prose max-w-none"
+      :class="isDark ? 'dark:prose-invert' : ''"
+      v-html="post.content"
+    ></div>
 
     <footer class="pt-20">
-       <div class="p-12 bg-slate-50 dark:bg-white/5 rounded-[3rem] text-center space-y-6">
+       <div
+         class="p-12 rounded-[3rem] text-center space-y-6 transition-colors duration-300"
+         :class="isDark ? 'bg-white/5' : 'bg-slate-50'"
+       >
           <h4 class="text-2xl font-serif font-black uppercase">Thanks for reading.</h4>
-          <p class="text-slate-500 max-w-md mx-auto font-medium">If you enjoyed this exploration, consider subscribing to the weekly architectural briefing.</p>
-          <button class="bg-editorial-primary text-white dark:bg-white dark:text-black px-10 py-4 rounded-full font-black uppercase tracking-widest text-xs">Subscribe Now</button>
+          <p class="max-w-md mx-auto transition-colors duration-300" :class="isDark ? 'text-slate-500' : 'text-slate-500'">
+            If you enjoyed this exploration, consider subscribing to the weekly architectural briefing.
+          </p>
+          <button class="bg-editorial-accent text-white px-10 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:scale-105 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-editorial-accent">
+            Subscribe Now
+          </button>
        </div>
     </footer>
   </article>
+
+  <div v-else class="max-w-4xl mx-auto px-10 py-24 text-center">
+    <p class="text-xl">Post not found</p>
+    <router-link to="/" class="text-editorial-accent hover:underline">Return to journal</router-link>
+  </div>
 </template>

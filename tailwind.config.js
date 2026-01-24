@@ -6,11 +6,11 @@ export default {
     extend: {
       colors: {
         editorial: {
-          bg: '#ffffff',
-          dark: '#0a0a0a',
-          primary: '#1a1a1a',
+          bg: 'var(--editorial-bg)',
+          dark: 'var(--editorial-dark)',
+          primary: 'var(--editorial-primary)',
           accent: '#3b82f6',
-          muted: '#737373'
+          muted: 'var(--editorial-muted)'
         }
       },
       fontFamily: {
