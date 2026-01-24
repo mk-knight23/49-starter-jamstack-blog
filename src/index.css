@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #1a1a1a;
+}
+
+body {
+  @apply bg-editorial-bg text-editorial-primary antialiased selection:bg-editorial-accent selection:text-white transition-colors duration-500;
+  font-family: 'Inter', system-ui, sans-serif;
+  margin: 0;
+}
+
+.dark body {
+  @apply bg-editorial-dark text-white;
+}
+
+.prose h1, .prose h2, .prose h3 {
+  @apply font-serif font-black tracking-tight;
+}
+
+.prose p {
+  @apply leading-relaxed text-lg text-slate-600 dark:text-slate-400;
+}
+
+.prose a {
+  @apply text-editorial-accent no-underline hover:underline;
+}
+
+.nav-link {
+  @apply text-xs font-black uppercase tracking-[0.2em] text-editorial-muted hover:text-editorial-primary transition-colors;
+}

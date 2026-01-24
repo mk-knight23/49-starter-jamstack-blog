@@ -1,5 +1,0 @@
-{% assign post = include.page %}
-{% assign date_type = include.date_type %}
-<footer class="post-meta">
-    <time class="published" datetime="{{ post.date | date: '%Y-%m-%d %H:%M' }}">{% if date_type == 'short' %}{{ post.date | date: '%B %d, %Y' }}{% else %}{{ post.date | date: '%A, %B %e, %Y' }}{% endif %}</time>{% assign author_is_not_empty = post.author | is_not_empty %}{% if author_is_not_empty %}{% assign author = post.author | get_data %}, by {{ author.first_name }} {{ author.last_name }}{% endif %}
-</footer>
