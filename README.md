@@ -1,4 +1,4 @@
-# Editorial - Modern Jamstack SSG Blog
+# CINEMA. | Movie & Series Blog Starter
 
 <div align="center">
 
@@ -7,97 +7,43 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-**A high-performance editorial blog architecture built with Vue 3 and Vite-SSG**
+**A cinematic movie and series review blog starter built with Vue 3, Vite-SSG, and Tailwind CSS v4**
 
-[Live Demo](https://editorial-blog.vercel.app) | [GitHub](https://github.com/mk-knight23/52-Jamstack-Static-Blog-Starter)
+[Live Demo](#) | [GitHub](#)
 
 </div>
 
 ---
 
-## Overview
+## Theme: Movie / Series Inspired UI
 
-Editorial is a production-grade static site generator blog starter built with Vue 3, Vite-SSG, and Tailwind CSS. It replaces legacy Jekyll/Liquid templates with a modern reactive SSG architecture.
+This starter kit features a cinematic, theater-inspired aesthetic:
 
-### Problem Statement
-
-Traditional static site generators like Jekyll require:
-- Ruby runtime and dependencies
-- Liquid template language with limited logic
-- No client-side interactivity
-- Complex theme development
-
-### Solution
-
-Editorial provides:
-- **Instant Page Loads**: Pre-rendered HTML with Vue hydration
-- **True SSG**: All pages pre-rendered at build time
-- **Dark/Light Mode**: System-aware theme with toggle
-- **Pinia State**: Centralized post management
-- **Full TypeScript**: Type-safe development
-
----
-
-## Features Comparison
-
-| Feature | Legacy (Jekyll) | Editorial (v2.0) |
-| :--- | :--- | :--- |
-| **Build Engine** | Ruby / Jekyll | **Vite-SSG (Node.js)** |
-| **Reactivity** | None | **Vue 3 Composition API** |
-| **State Management** | None | **Pinia** |
-| **Theme** | Fixed | **Dark + Light mode** |
-| **Type Safety** | None | **TypeScript strict mode** |
-| **Navigation** | Full page reload | **Client-side SPA transitions** |
-| **SEO** | Basic meta | **@vueuse/head with full meta** |
+- **Gold accent color** (`#d4af37`) for premium feel
+- **Deep dark backgrounds** mimicking theater environments
+- **Serif typography** (Playfair Display) for titles
+- **Star ratings** and review scores
+- **Poster-style cards** with hover effects
+- **Play button** and film-related iconography
 
 ---
 
 ## Tech Stack
 
-- **Framework**: Vue 3.5+ with Composition API
+- **Framework**: Vue 3.5+ (Composition API)
 - **SSG**: Vite-SSG for static generation
-- **State**: Pinia with modular stores
-- **Styling**: Tailwind CSS 3.4
-- **Routing**: Vue Router 4
+- **State**: Pinia 3.x
+- **Styling**: Tailwind CSS v4
+- **Routing**: Vue Router 4.x
 - **Head Management**: @vueuse/head
-- **Icons**: Lucide Vue
-- **TypeScript**: Strict mode enabled
+- **Icons**: Lucide Vue Next
+- **TypeScript**: 5.6+ with strict mode
 
 ---
 
-## Architecture
-
-```
-src/
-├── composables/
-│   └── useTheme.ts              # Dark/Light mode management
-├── stores/
-│   └── posts.ts                 # Pinia store for blog posts
-├── views/
-│   ├── Home.vue                 # Blog listing page
-│   └── Post.vue                 # Individual post page
-├── router.ts                    # Vue Router configuration
-├── App.vue                      # Root layout component
-├── main.ts                      # Vite-SSG entry point
-└── index.css                    # Global styles & theme
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 20.x or higher
-- npm 10.x or higher
-
-### Installation
+## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/mk-knight23/52-Jamstack-Static-Blog-Starter.git
-cd 52-Jamstack-Static-Blog-Starter
-
 # Install dependencies
 npm install
 
@@ -108,96 +54,92 @@ npm run dev
 npm run build
 ```
 
-### Development
+---
 
-```bash
-npm run dev
+## Movie Theme Components
+
+### Color Palette
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--color-cinema-bg` | `#0a0a0a` | Main background |
+| `--color-cinema-card` | `#1a1a1a` | Card backgrounds |
+| `--color-cinema-gold` | `#d4af37` | Primary accent |
+| `--color-cinema-gold-dim` | `#9a7b2d` | Secondary gold |
+| `--color-cinema-red` | `#c41e3a` | Alerts, ratings |
+| `--color-cinema-white` | `#f5f5f5` | Primary text |
+| `--color-cinema-muted` | `#737373` | Secondary text |
+
+### Typography
+
+- **Display:** Playfair Display (headings, titles)
+- **Body:** Inter (body text)
+- **Data:** JetBrains Mono (dates, meta info)
+
+### Available Classes
+
+```css
+.cinema-container   /* Main wrapper */
+.cinema-nav         /* Navigation bar */
+.cinema-logo        /* Brand logo with gold glow */
+.cinema-button      /* Gold gradient button */
+.cinema-card        /* Hover-animated card */
+.cinema-poster      /* Aspect ratio 2/3 for posters */
+.cinema-badge       /* Rounded badge label */
+.cinema-rating      /* Star rating display */
 ```
 
-Starts the Vite development server with hot module replacement.
+### Animations
 
-### Production Build
-
-```bash
-npm run build
+```css
+.animate-fade-in    /* Fade in effect */
+.animate-slide-up   /* Slide up reveal */
+.animate-scale-in   /* Scale reveal */
+.animate-glow       /* Golden glow pulse */
 ```
-
-Generates pre-rendered static HTML for all routes using Vite-SSG.
 
 ---
 
-## Theme System
+## Project Structure
 
-The blog supports both dark and light modes with:
-
-- **System Detection**: Automatically detects system preference
-- **Manual Toggle**: Users can switch themes via the nav button
-- **Persistence**: Theme preference saved in localStorage
-- **Smooth Transitions**: 200ms CSS transitions between themes
-
-### CSS Variables
-
-```css
-:root {
-  --editorial-bg: #ffffff;
-  --editorial-primary: #1a1a1a;
-  --editorial-accent: #3b82f6;
-  --editorial-muted: #737373;
-}
-
-.dark {
-  --editorial-bg: #0a0a0a;
-  --editorial-primary: #ffffff;
-  --editorial-muted: #a1a1aa;
-}
+```
+src/
+├── composables/
+│   ├── useAudio.ts
+│   └── useTheme.ts
+├── stores/
+│   ├── posts.ts
+│   ├── settings.ts
+│   └── stats.ts
+├── views/
+│   ├── Home.vue        # Movie listing & reviews
+│   └── Post.vue        # Individual review page
+├── components/
+│   └── ui/
+│       └── SettingsPanel.vue
+├── App.vue             # Main layout
+├── main.ts             # Vite-SSG entry
+└── index.css           # Tailwind v4 + Movie theme
 ```
 
 ---
 
 ## Deployment
 
-This project is pre-configured for **Vite-SSG** and deploys to any static host:
-
-- **Vercel**: Automatic deployments from Git
-- **Netlify**: Drop the `dist` folder or connect repo
-- **GitHub Pages**: Use the `dist` output
-- **Cloudflare Pages**: Supports Vite-SSG out of the box
-
 ```bash
-# Deploy to Vercel
-npx vercel --prod
+# Build for production (SSG)
+npm run build
 
-# Preview production build locally
+# Preview production build
 npm run preview
 ```
 
----
-
-## SEO & Meta Tags
-
-The blog uses `@vueuse/head` for comprehensive SEO:
-
-```typescript
-useHead({
-  title: 'Editorial | Modern SSG Blog',
-  meta: [
-    { name: 'description', content: 'A high-performance editorial blog...' },
-    { name: 'og:title', content: 'Editorial | Modern SSG Blog' },
-    { name: 'og:description', content: 'A high-performance editorial blog...' },
-  ],
-})
-```
-
----
-
-## License
-
-MIT License - See [LICENSE.md](LICENSE.md) for details.
+Compatible with Vercel, Netlify, GitHub Pages, and Cloudflare Pages.
 
 ---
 
 <div align="center">
 
-**Built with Vue 3 + Vite-SSG + Tailwind CSS**
+**CINEMA.** // YOUR PREMIER MOVIE DESTINATION
 
 </div>
