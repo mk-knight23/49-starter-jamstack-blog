@@ -9,7 +9,7 @@
 
 **A cinematic movie and series review blog starter built with Vue 3, Vite-SSG, and Tailwind CSS v4**
 
-[Live Demo](#) | [GitHub](#)
+[Live Demo](https://49-starter-jamstack-blog.vercel.app) | [GitHub](https://github.com/mk-knight23/52-Jamstack-Static-Blog-Starter)
 
 </div>
 
