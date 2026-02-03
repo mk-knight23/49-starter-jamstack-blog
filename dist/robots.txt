@@ -1,0 +1,8 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+Sitemap: https://49-starter-jamstack-blog.vercel.app/sitemap.xml
+
+# Disallow specific paths if needed
+# Disallow: /private/

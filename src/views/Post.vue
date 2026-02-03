@@ -1,90 +1,201 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePostsStore } from '@/stores/posts'
-import { useTheme } from '@/composables/useTheme'
-import { ArrowLeft, Clock, Share2, Bookmark } from 'lucide-vue-next'
+import { useComments } from '@/composables/useComments'
+import { useAnalytics } from '@/composables/useAnalytics'
+import { ArrowLeft, Clock, Share2, Bookmark, Calendar } from 'lucide-vue-next'
+import CommentForm from '@/components/comments/CommentForm.vue'
+import CommentList from '@/components/comments/CommentList.vue'
 
 const route = useRoute()
 const router = useRouter()
 const store = usePostsStore()
-const { isDark } = useTheme()
 
-const post = computed(() => store.getPostById(route.params.id as string))
+const post = computed(() => {
+  const id = route.params.id as string
+  return store.posts.find(p => p.id === id)
+})
+
+const readingProgress = ref(0)
+
+const updateProgress = () => {
+  const scrollTop = window.scrollY
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight
+  readingProgress.value = (scrollTop / docHeight) * 100
+}
+
+onMounted(async () => {
+  await store.initialize()
+  window.addEventListener('scroll', updateProgress)
+})
 
 const goBack = () => router.push('/')
+
+// Comments
+const postIdNumber = computed(() => {
+  // Try to convert ID to number, if it's already a string ID use a hash
+  const id = route.params.id as string
+  const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  return hash
+})
+
+const { comments, loading: commentsLoading, submitComment } = useComments(postIdNumber.value)
+
+// Analytics
+useAnalytics(postIdNumber.value)
+
+async function handleSubmitComment(data: { author_name: string; author_email: string; content: string }) {
+  const result = await submitComment(data)
+  if (result.success) {
+    alert(result.message)
+  } else {
+    alert(result.error || 'Failed to submit comment')
+  }
+}
 </script>
 
 <template>
-  <article v-if="post" class="max-w-4xl mx-auto px-10 py-24 space-y-12" role="article">
-    <router-link
-      to="/"
-      class="inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] transition-colors hover:text-editorial-accent"
-      :class="isDark ? 'text-slate-500' : 'text-slate-400'"
-    >
-       <ArrowLeft class="mr-2" :size="14" /> Back to Journal
-    </router-link>
-
-    <header class="space-y-8">
-       <div class="flex items-center space-x-4 text-[10px] font-black uppercase tracking-widest text-editorial-accent">
-          <span>{{ post.category }}</span>
-          <span class="w-1 h-1 rounded-full" :class="isDark ? 'bg-slate-600' : 'bg-slate-300'"></span>
-          <span class="flex items-center gap-1.5">
-            <Clock :size="12" /> {{ post.readTime }}
-          </span>
-       </div>
-       <h1 class="text-6xl md:text-8xl font-serif font-black tracking-tighter leading-[0.9]">
-          {{ post.title }}
-       </h1>
-       <div class="flex items-center justify-between py-8 border-y transition-colors duration-300" :class="isDark ? 'border-white/5' : 'border-slate-100'">
-          <div class="flex items-center space-x-4">
-             <div class="w-10 h-10 rounded-full" :class="isDark ? 'bg-slate-800' : 'bg-slate-200'"></div>
-             <div>
-                <p class="text-xs font-black uppercase tracking-tight">{{ post.author }}</p>
-                <p class="text-[10px] uppercase tracking-wider" :class="isDark ? 'text-slate-600' : 'text-slate-500'">{{ post.date }}</p>
-             </div>
-          </div>
-          <div class="flex items-center space-x-4" :class="isDark ? 'text-slate-500' : 'text-slate-400'">
-             <button
-               class="p-2 hover:text-editorial-accent transition-colors"
-               aria-label="Share post"
-             >
-               <Share2 :size="18" />
-             </button>
-             <button
-               class="p-2 hover:text-editorial-accent transition-colors"
-               aria-label="Bookmark post"
-             >
-               <Bookmark :size="18" />
-             </button>
-          </div>
-       </div>
-    </header>
-
+  <div v-if="post" class="writer-container">
+    <!-- Reading Progress Bar -->
     <div
-      class="prose max-w-none"
-      :class="isDark ? 'dark:prose-invert' : ''"
-      v-html="post.content"
+      class="reading-progress"
+      :style="{ transform: `scaleX(${readingProgress / 100})` }"
     ></div>
 
-    <footer class="pt-20">
-       <div
-         class="p-12 rounded-[3rem] text-center space-y-6 transition-colors duration-300"
-         :class="isDark ? 'bg-white/5' : 'bg-slate-50'"
-       >
-          <h4 class="text-2xl font-serif font-black uppercase">Thanks for reading.</h4>
-          <p class="max-w-md mx-auto transition-colors duration-300" :class="isDark ? 'text-slate-500' : 'text-slate-500'">
-            If you enjoyed this exploration, consider subscribing to the weekly architectural briefing.
-          </p>
-          <button class="bg-editorial-accent text-white px-10 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:scale-105 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-editorial-accent">
-            Subscribe Now
-          </button>
-       </div>
-    </footer>
-  </article>
+    <article class="space-y-12">
+      <!-- Back Button -->
+      <router-link
+        to="/"
+        class="inline-flex items-center gap-2 text-sm text-writer-muted hover:text-writer-accent transition-colors"
+      >
+        <ArrowLeft :size="16" />
+        Back to articles
+      </router-link>
 
-  <div v-else class="max-w-4xl mx-auto px-10 py-24 text-center">
-    <p class="text-xl">Post not found</p>
-    <router-link to="/" class="text-editorial-accent hover:underline">Return to journal</router-link>
+      <!-- Header -->
+      <header class="space-y-6">
+        <div class="flex items-center gap-4">
+          <router-link
+            :to="`/categories/${post.category}`"
+            class="writer-tag"
+          >
+            {{ post.category }}
+          </router-link>
+          <div class="flex items-center gap-4 text-sm text-writer-muted">
+            <span class="flex items-center gap-1.5">
+              <Calendar :size="14" />
+              {{ post.date }}
+            </span>
+            <span class="flex items-center gap-1.5">
+              <Clock :size="14" />
+              {{ post.readTimeCalc }}
+            </span>
+          </div>
+        </div>
+
+        <h1 class="writer-heading-display text-5xl md:text-7xl">
+          {{ post.title }}
+        </h1>
+
+        <div class="flex items-center justify-between py-6 border-y border-writer-border dark:border-writer-border-dark">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-writer-accent to-writer-accent-hover"></div>
+            <div>
+              <p class="font-medium text-writer-text dark:text-writer-text-dark">{{ post.author }}</p>
+              <p class="text-sm text-writer-muted">Author</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              class="p-2 rounded-lg text-writer-muted hover:text-writer-accent hover:bg-writer-bg dark:hover:bg-writer-bg-dark transition-colors"
+              aria-label="Share post"
+            >
+              <Share2 :size="18" />
+            </button>
+            <button
+              class="p-2 rounded-lg text-writer-muted hover:text-writer-accent hover:bg-writer-bg dark:hover:bg-writer-bg-dark transition-colors"
+              aria-label="Bookmark post"
+            >
+              <Bookmark :size="18" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Tags -->
+      <div v-if="post.tags" class="flex flex-wrap gap-2">
+        <router-link
+          v-for="tag in post.tags"
+          :key="tag"
+          :to="`/tags/${tag}`"
+          class="writer-tag"
+        >
+          #{{ tag }}
+        </router-link>
+      </div>
+
+      <!-- Content -->
+      <div
+        class="prose max-w-none"
+        v-html="post.html"
+      ></div>
+
+      <!-- Footer -->
+      <footer class="pt-16">
+        <div class="writer-card p-12 text-center space-y-6">
+          <h3 class="writer-heading text-3xl">Thanks for reading</h3>
+          <p class="text-writer-muted max-w-md mx-auto">
+            If you enjoyed this article, consider subscribing to get future posts delivered to your inbox.
+          </p>
+          <button class="writer-button">
+            Subscribe to newsletter
+          </button>
+        </div>
+      </footer>
+
+      <!-- Related Posts -->
+      <section v-if="post.tags" class="space-y-8">
+        <h2 class="writer-heading text-2xl">Related articles</h2>
+        <div class="grid md:grid-cols-2 gap-6">
+          <article
+            v-for="relatedPost in store.posts
+              .filter(p => p.id !== post.id && p.tags?.some(t => post.tags?.includes(t)))
+              .slice(0, 2)"
+            :key="relatedPost.id"
+            class="writer-card p-6 group"
+          >
+            <router-link :to="`/post/${relatedPost.id}`" class="block space-y-3">
+              <span class="writer-tag">{{ relatedPost.category }}</span>
+              <h3 class="writer-heading text-xl group-hover:text-writer-accent transition-colors">
+                {{ relatedPost.title }}
+              </h3>
+              <p class="text-sm text-writer-muted">{{ relatedPost.readTimeCalc }}</p>
+            </router-link>
+          </article>
+        </div>
+      </section>
+
+      <!-- Comments Section -->
+      <section class="space-y-8 pt-8 border-t border-writer-border dark:border-writer-border-dark">
+        <h2 class="writer-heading text-2xl">Comments</h2>
+
+        <!-- Comment Form -->
+        <div class="writer-card p-6">
+          <CommentForm @submit="handleSubmitComment" />
+        </div>
+
+        <!-- Comment List -->
+        <CommentList :comments="comments" :loading="commentsLoading" />
+      </section>
+    </article>
+  </div>
+
+  <div v-else class="writer-container text-center py-20">
+    <p class="text-xl text-writer-muted mb-4">Article not found</p>
+    <router-link to="/" class="text-writer-accent hover:underline">
+      Return to articles
+    </router-link>
   </div>
 </template>

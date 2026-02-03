@@ -1,140 +1,144 @@
 <script setup lang="ts">
+import { computed, onMounted } from 'vue'
 import { usePostsStore } from '@/stores/posts'
-import { ArrowRight, Star, Clock, Calendar } from 'lucide-vue-next'
+import { ArrowRight, Clock, Calendar, Tag } from 'lucide-vue-next'
 
 const store = usePostsStore()
+
+const featuredPosts = computed(() => store.posts.filter(p => p.featured))
+const latestPosts = computed(() => store.posts.slice(0, 6))
+
+onMounted(async () => {
+  await store.initialize()
+})
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-8 py-16 space-y-20">
+  <div class="writer-container space-y-20">
     <!-- Hero Section -->
-    <header class="max-w-4xl space-y-8 animate-slide-up">
-       <div class="flex items-center gap-4">
-          <span class="h-px flex-1 bg-gradient-to-r from-transparent to-cinema-gold/30"></span>
-          <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-cinema-gold/10 border border-cinema-gold/20">
-             <Star class="text-cinema-gold" :size="14" fill="currentColor" />
-             <span class="font-mono text-[10px] font-bold uppercase tracking-widest text-cinema-gold">Featured Premiere</span>
-          </div>
-          <span class="h-px flex-1 bg-gradient-to-l from-transparent to-cinema-gold/30"></span>
-       </div>
+    <header class="max-w-3xl space-y-8 animate-fade-in">
+      <h1 class="writer-heading-display">
+        Ideas worth<br />
+        <span class="text-writer-accent">reading about</span>
+      </h1>
 
-       <h2 class="cinema-section-title text-5xl md:text-7xl">
-          Now <span class="italic text-cinema-gold">Showing</span><br />
-          In Theaters
-       </h2>
+      <p class="text-xl text-writer-muted leading-relaxed max-w-2xl">
+        A high-performance editorial blog exploring engineering, design, and the future of web development.
+      </p>
 
-       <p class="font-mono text-sm text-cinema-muted max-w-lg leading-relaxed">
-          Your premier destination for in-depth movie reviews, series analysis, and exclusive behind-the-scenes content.
-       </p>
+      <div class="flex items-center gap-4 pt-4">
+        <div class="flex items-center gap-2 text-sm text-writer-muted">
+          <Calendar :size="16" />
+          <span>{{ new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }}</span>
+        </div>
+        <span class="text-writer-muted">•</span>
+        <div class="flex items-center gap-2 text-sm text-writer-muted">
+          <span>{{ store.posts.length }} articles</span>
+        </div>
+      </div>
     </header>
 
-    <!-- Featured Poster -->
-    <section class="grid lg:grid-cols-3 gap-12 animate-fade-in" style="animation-delay: 0.2s">
-       <div class="lg:col-span-1">
-          <div class="cinema-poster cinema-card group">
-             <div class="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900"></div>
-             <div class="cinema-poster-overlay flex flex-col justify-end p-6">
-                <div class="flex items-center gap-2 mb-4">
-                   <span class="cinema-badge">IN THEATERS</span>
-                </div>
-                <button class="cinema-button w-full flex items-center justify-center gap-2">
-                   <Play :size="16" fill="currentColor" /> WATCH TRAILER
-                </button>
-             </div>
-          </div>
-       </div>
+    <div class="writer-divider"></div>
 
-       <div class="lg:col-span-2 flex flex-col justify-center space-y-8">
-          <div class="space-y-4">
-             <div class="flex items-center gap-4">
-                <span class="cinema-badge">EPIC</span>
-                <span class="flex items-center gap-1 cinema-rating font-mono text-xs">
-                   <Star :size="14" fill="currentColor" /> 4.8/5
+    <!-- Featured Posts -->
+    <section v-if="featuredPosts.length > 0" class="space-y-10">
+      <h2 class="writer-heading text-3xl">Featured</h2>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        <article
+          v-for="post in featuredPosts"
+          :key="post.id"
+          class="group"
+        >
+          <router-link :to="`/post/${post.id}`" class="block space-y-4">
+            <div class="writer-card p-8 group-hover:border-writer-accent/30 transition-colors">
+              <div class="flex items-center gap-4 mb-4">
+                <span class="writer-tag">{{ post.category }}</span>
+                <span class="writer-meta">{{ post.date }}</span>
+              </div>
+
+              <h3 class="writer-heading text-2xl group-hover:text-writer-accent transition-colors">
+                {{ post.title }}
+              </h3>
+
+              <p class="text-writer-muted leading-relaxed">
+                {{ post.excerpt || post.description }}
+              </p>
+
+              <div class="flex items-center gap-4 pt-4">
+                <span class="flex items-center gap-1.5 text-sm text-writer-muted">
+                  <Clock :size="14" />
+                  {{ post.readTimeCalc }}
                 </span>
-             </div>
-             <h3 class="text-4xl md:text-5xl font-display font-black leading-tight">
-                The Last <span class="italic text-cinema-gold">Empire</span>
-             </h3>
-             <p class="font-mono text-sm text-cinema-muted leading-relaxed max-w-xl">
-                An epic saga spanning generations, where ancient prophecies collide with modern ambition in a battle for the soul of civilization.
-             </p>
-          </div>
-
-          <div class="flex flex-wrap gap-6">
-             <div class="flex items-center gap-2 text-cinema-muted">
-                <Calendar :size="16" />
-                <span class="font-mono text-xs uppercase tracking-wider">Dec 25, 2026</span>
-             </div>
-             <div class="flex items-center gap-2 text-cinema-muted">
-                <Clock :size="16" />
-                <span class="font-mono text-xs uppercase tracking-wider">2h 34m</span>
-             </div>
-             <div class="flex items-center gap-2 text-cinema-muted">
-                <Star :size="16" class="text-cinema-gold" />
-                <span class="font-mono text-xs uppercase tracking-wider">Adventure, Drama</span>
-             </div>
-          </div>
-
-          <div class="pt-4">
-             <router-link to="/post/1" class="cinema-button inline-flex items-center gap-2 group">
-                Read Full Review
-                <ArrowRight class="group-hover:translate-x-1 transition-transform" :size="16" />
-             </router-link>
-          </div>
-       </div>
+                <span class="flex items-center gap-1.5 text-sm text-writer-accent group-hover:translate-x-1 transition-transform">
+                  Read more <ArrowRight :size="14" />
+                </span>
+              </div>
+            </div>
+          </router-link>
+        </article>
+      </div>
     </section>
 
-    <div class="cinema-divider"></div>
+    <!-- Latest Posts -->
+    <section class="space-y-10">
+      <div class="flex items-center justify-between">
+        <h2 class="writer-heading text-3xl">Latest</h2>
+      </div>
 
-    <!-- Post Grid -->
-    <section class="space-y-10" role="list" aria-label="Latest reviews">
-       <div class="flex items-center justify-between">
-          <h3 class="cinema-section-title text-2xl">Latest <span class="italic text-cinema-gold">Releases</span></h3>
-          <a href="#" class="font-mono text-xs text-cinema-muted hover:text-cinema-gold transition-colors tracking-wider">
-             VIEW ALL →
-          </a>
-       </div>
+      <div class="space-y-6">
+        <article
+          v-for="post in latestPosts"
+          :key="post.id"
+          class="group"
+        >
+          <router-link :to="`/post/${post.id}`" class="block space-y-3">
+            <div class="flex items-center gap-3 text-sm">
+              <span class="writer-tag">{{ post.category }}</span>
+              <span class="writer-meta">{{ post.date }}</span>
+              <span class="writer-meta">•</span>
+              <span class="flex items-center gap-1 text-writer-muted">
+                <Clock :size="14" />
+                {{ post.readTimeCalc }}
+              </span>
+            </div>
 
-       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <article
-            v-for="post in store.posts"
-            :key="post.id"
-            class="group cursor-pointer"
-            role="listitem"
-          >
-             <router-link :to="'/post/' + post.id" class="block space-y-4">
-               <div class="cinema-poster cinema-card group-hover:border-cinema-gold/30">
-                  <div class="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900"></div>
-                  <div class="cinema-poster-overlay flex flex-col justify-end p-4">
-                     <div class="flex items-center gap-2">
-                        <span class="flex items-center gap-1 cinema-rating font-mono text-[10px]">
-                           <Star :size="12" fill="currentColor" /> 4.5
-                        </span>
-                     </div>
-                  </div>
-               </div>
-               <div class="space-y-3">
-                  <div class="flex items-center justify-between">
-                     <span class="font-mono text-[10px] text-cinema-gold uppercase tracking-wider">{{ post.category }}</span>
-                     <span class="font-mono text-[10px] text-cinema-muted">{{ post.date }}</span>
-                  </div>
-                  <h3 class="cinema-title group-hover:text-cinema-gold transition-colors">
-                    {{ post.title }}
-                  </h3>
-                  <p class="font-mono text-xs text-cinema-muted leading-relaxed line-clamp-2">
-                    {{ post.excerpt }}
-                  </p>
-                  <span class="inline-flex items-center font-mono text-[10px] text-cinema-muted uppercase tracking-wider pt-2 group-hover:text-cinema-gold transition-colors">
-                     Read Review <ArrowRight class="ml-1" :size="12" />
-                  </span>
-               </div>
-            </router-link>
-          </article>
-       </div>
+            <h3 class="writer-heading text-2xl group-hover:text-writer-accent transition-colors">
+              {{ post.title }}
+            </h3>
+
+            <p class="text-writer-muted leading-relaxed max-w-2xl">
+              {{ post.excerpt || post.description }}
+            </p>
+
+            <div v-if="post.tags" class="flex flex-wrap gap-2">
+              <router-link
+                v-for="tag in post.tags.slice(0, 3)"
+                :key="tag"
+                :to="`/tags/${tag}`"
+                class="flex items-center gap-1 text-sm text-writer-muted hover:text-writer-accent transition-colors"
+                @click.stop
+              >
+                <Tag :size="12" />
+                {{ tag }}
+              </router-link>
+            </div>
+          </router-link>
+        </article>
+      </div>
     </section>
+
+    <!-- Footer CTA -->
+    <footer class="text-center py-20">
+      <div class="writer-card p-12 max-w-2xl mx-auto">
+        <h3 class="writer-heading text-3xl mb-4">Stay updated</h3>
+        <p class="text-writer-muted mb-6">
+          Get the latest articles delivered straight to your inbox.
+        </p>
+        <button class="writer-button">
+          Subscribe to the newsletter
+        </button>
+      </div>
+    </footer>
   </div>
 </template>
-
-<script lang="ts">
-export {}
-</script>
