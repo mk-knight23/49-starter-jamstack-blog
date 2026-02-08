@@ -20,7 +20,8 @@ export function getAllPosts(req: Request, res: Response): void {
 
 export function getPostById(req: Request, res: Response): void {
   const { id } = req.params
-  const post = postDb.findById(parseInt(id))
+  const idStr = Array.isArray(id) ? id[0] : id
+  const post = postDb.findById(parseInt(idStr, 10))
 
   if (!post) {
     res.status(404).json({ error: 'Post not found' })
@@ -40,7 +41,8 @@ export function getPostById(req: Request, res: Response): void {
 
 export function getPostBySlug(req: Request, res: Response): void {
   const { slug } = req.params
-  const post = postDb.findBySlug(slug)
+  const slugStr = Array.isArray(slug) ? slug[0] : slug
+  const post = postDb.findBySlug(slugStr)
 
   if (!post) {
     res.status(404).json({ error: 'Post not found' })
@@ -78,8 +80,9 @@ export function createPost(req: AuthRequest, res: Response): void {
 export function updatePost(req: AuthRequest, res: Response): void {
   try {
     const { id } = req.params
-    postDb.update(parseInt(id), req.body)
-    const post = postDb.findById(parseInt(id))
+    const idStr = Array.isArray(id) ? id[0] : id
+    postDb.update(parseInt(idStr, 10), req.body)
+    const post = postDb.findById(parseInt(idStr, 10))
 
     res.json({
       success: true,
@@ -96,7 +99,8 @@ export function updatePost(req: AuthRequest, res: Response): void {
 export function deletePost(req: AuthRequest, res: Response): void {
   try {
     const { id } = req.params
-    postDb.delete(parseInt(id))
+    const idStr = Array.isArray(id) ? id[0] : id
+    postDb.delete(parseInt(idStr, 10))
     res.json({ success: true })
   } catch (error: any) {
     res.status(400).json({ error: error.message })
@@ -116,7 +120,8 @@ export function getFeaturedPosts(req: Request, res: Response): void {
 
 export function getPostsByCategory(req: Request, res: Response): void {
   const { category } = req.params
-  const posts = postDb.getByCategory(category)
+  const categoryStr = Array.isArray(category) ? category[0] : category
+  const posts = postDb.getByCategory(categoryStr)
 
   const parsedPosts = posts.map((post: any) => ({
     ...post,
@@ -128,7 +133,8 @@ export function getPostsByCategory(req: Request, res: Response): void {
 
 export function getPostsByTag(req: Request, res: Response): void {
   const { tag } = req.params
-  const posts = postDb.getByTag(tag)
+  const tagStr = Array.isArray(tag) ? tag[0] : tag
+  const posts = postDb.getByTag(tagStr)
 
   const parsedPosts = posts.map((post: any) => ({
     ...post,

@@ -4,8 +4,9 @@ import type { AuthRequest } from '../middleware/auth'
 
 export function getCommentsByPostId(req: Request, res: Response): void {
   const { postId } = req.params
+  const postIdStr = Array.isArray(postId) ? postId[0] : postId
   const approvedOnly = req.query.approved !== 'false'
-  const comments = commentDb.findByPostId(parseInt(postId), approvedOnly)
+  const comments = commentDb.findByPostId(parseInt(postIdStr, 10), approvedOnly)
 
   res.json({ success: true, data: comments })
 }
@@ -39,7 +40,8 @@ export function createComment(req: Request, res: Response): void {
 export function approveComment(req: AuthRequest, res: Response): void {
   try {
     const { id } = req.params
-    commentDb.approve(parseInt(id))
+    const idStr = Array.isArray(id) ? id[0] : id
+    commentDb.approve(parseInt(idStr, 10))
     res.json({ success: true })
   } catch (error: any) {
     res.status(400).json({ error: error.message })
@@ -49,7 +51,8 @@ export function approveComment(req: AuthRequest, res: Response): void {
 export function deleteComment(req: AuthRequest, res: Response): void {
   try {
     const { id } = req.params
-    commentDb.delete(parseInt(id))
+    const idStr = Array.isArray(id) ? id[0] : id
+    commentDb.delete(parseInt(idStr, 10))
     res.json({ success: true })
   } catch (error: any) {
     res.status(400).json({ error: error.message })

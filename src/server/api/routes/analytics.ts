@@ -22,13 +22,14 @@ export function trackPageView(req: Request, res: Response): void {
 export function getPostAnalytics(req: Request, res: Response): void {
   try {
     const { postId } = req.params
-    const analytics = analyticsDb.findByPostId(parseInt(postId))
+    const postIdStr = Array.isArray(postId) ? postId[0] : postId
+    const analytics = analyticsDb.findByPostId(parseInt(postIdStr, 10))
 
     if (!analytics) {
       res.json({
         success: true,
         data: {
-          post_id: parseInt(postId),
+          post_id: parseInt(postIdStr, 10),
           page_views: 0,
           unique_visitors: 0,
         },

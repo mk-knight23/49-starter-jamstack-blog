@@ -12,7 +12,7 @@ const posts = ref<any[]>([])
 const loading = ref(true)
 
 onMounted(async () => {
-  if (!authState.isAuthenticated) {
+  if (!authState.value.isAuthenticated) {
     router.push('/admin/login')
     return
   }

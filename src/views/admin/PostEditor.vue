@@ -39,7 +39,7 @@ function slugify(text: string): string {
 }
 
 onMounted(async () => {
-  if (!authState.isAuthenticated) {
+  if (!authState.value.isAuthenticated) {
     router.push('/admin/login')
     return
   }

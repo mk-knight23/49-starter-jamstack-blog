@@ -67,8 +67,11 @@ export async function loadAllPosts(): Promise<Post[]> {
         ...frontmatter,
       }
     })
-    .filter((post): post is Post => post !== null)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .filter((post): post is NonNullable<typeof post> => post !== null)
+    .sort((a, b) => {
+      if (!a || !b) return 0
+      return new Date(b.date).getTime() - new Date(a.date).getTime()
+    })
 
   return posts
 }

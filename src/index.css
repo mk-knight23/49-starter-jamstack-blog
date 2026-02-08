@@ -15,6 +15,14 @@
   --color-writer-card: #ffffff;
   --color-writer-card-dark: #262626;
 
+  /* Cinema Theme Colors */
+  --color-cinema-gold: #e2b714;
+  --color-cinema-bg: #0a0a0a;
+  --color-cinema-card: #141414;
+  --color-cinema-text: #ffffff;
+  --color-cinema-muted: #a0a0a0;
+  --color-cinema-border: #2a2a2a;
+
   /* Typography */
   --font-serif: 'Literata', 'Georgia', serif;
   --font-sans: 'Inter', system-ui, sans-serif;
@@ -25,12 +33,25 @@
   --animate-slide-up: slide-up 0.4s ease-out;
 
   @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
+
   @keyframes slide-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
@@ -63,118 +84,151 @@ body {
 
 /* Typography-focused components */
 @layer components {
-  .writer-container {
+
+  .writer-container,
+  .cinema-container {
     @apply max-w-4xl mx-auto px-6 py-12;
   }
 
-  .writer-nav {
+  .writer-nav,
+  .cinema-nav {
     @apply sticky top-0 z-50 backdrop-blur-lg border-b;
     background: rgba(250, 250, 250, 0.8);
     border-color: var(--color-writer-border);
   }
 
-  .dark .writer-nav {
+  .dark .writer-nav,
+  .dark .cinema-nav {
     background: rgba(26, 26, 26, 0.8);
     border-color: var(--color-writer-border-dark);
   }
 
-  .writer-logo {
+  .writer-logo,
+  .cinema-logo {
     @apply font-serif font-bold text-xl tracking-tight;
     color: var(--color-writer-text);
   }
 
-  .dark .writer-logo {
+  .dark .writer-logo,
+  .dark .cinema-logo {
     color: var(--color-writer-text-dark);
   }
 
-  .writer-nav-link {
+  .writer-nav-link,
+  .cinema-nav-link {
     @apply text-sm font-medium transition-colors duration-200;
     color: var(--color-writer-muted);
   }
 
-  .writer-nav-link:hover {
+  .writer-nav-link:hover,
+  .cinema-nav-link:hover {
     color: var(--color-writer-accent);
   }
 
-  .writer-heading {
+  .writer-heading,
+  .cinema-heading {
     @apply font-serif font-bold;
     color: var(--color-writer-text);
     line-height: 1.2;
   }
 
-  .dark .writer-heading {
+  .dark .writer-heading,
+  .dark .cinema-heading {
     color: var(--color-writer-text-dark);
   }
 
-  .writer-heading-display {
+  .writer-heading-display,
+  .cinema-heading-display {
     @apply text-5xl md:text-7xl font-serif font-bold;
     color: var(--color-writer-text);
     line-height: 1.1;
   }
 
-  .dark .writer-heading-display {
+  .dark .writer-heading-display,
+  .dark .cinema-heading-display {
     color: var(--color-writer-text-dark);
   }
 
-  .writer-meta {
+  .writer-meta,
+  .cinema-meta {
     @apply text-sm font-mono;
     color: var(--color-writer-muted);
   }
 
-  .writer-card {
+  .writer-card,
+  .cinema-card {
     @apply rounded-lg overflow-hidden transition-all duration-300;
     background: var(--color-writer-card);
     border: 1px solid var(--color-writer-border);
   }
 
-  .dark .writer-card {
+  .dark .writer-card,
+  .dark .cinema-card {
     background: var(--color-writer-card-dark);
     border-color: var(--color-writer-border-dark);
   }
 
-  .writer-card:hover {
+  .writer-card:hover,
+  .cinema-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
-  .dark .writer-card:hover {
+  .dark .writer-card:hover,
+  .dark .cinema-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 
-  .writer-tag {
+  .writer-tag,
+  .cinema-tag {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
     background: var(--color-writer-bg);
     color: var(--color-writer-accent);
     border: 1px solid var(--color-writer-border);
   }
 
-  .dark .writer-tag {
+  .dark .writer-tag,
+  .dark .cinema-tag {
     background: var(--color-writer-bg-dark);
     border-color: var(--color-writer-border-dark);
   }
 
-  .writer-tag:hover {
+  .writer-tag:hover,
+  .cinema-tag:hover {
     background: var(--color-writer-accent);
     color: white;
   }
 
-  .writer-divider {
+  .writer-divider,
+  .cinema-divider {
     @apply w-full h-px my-12;
     background: linear-gradient(90deg, transparent, var(--color-writer-border), transparent);
   }
 
-  .dark .writer-divider {
+  .dark .writer-divider,
+  .dark .cinema-divider {
     background: linear-gradient(90deg, transparent, var(--color-writer-border-dark), transparent);
   }
 
-  .writer-button {
+  .writer-button,
+  .cinema-button {
     @apply px-6 py-3 rounded-lg font-medium text-sm transition-all duration-200;
     background: var(--color-writer-accent);
     color: white;
   }
 
-  .writer-button:hover {
+  .writer-button:hover,
+  .cinema-button:hover {
     background: var(--color-writer-accent-hover);
     transform: translateY(-1px);
+  }
+
+  .cinema-footer {
+    @apply w-full py-12 mt-20 border-t;
+    border-color: var(--color-writer-border);
+  }
+
+  .dark .cinema-footer {
+    border-color: var(--color-writer-border-dark);
   }
 
   /* Reading progress bar */

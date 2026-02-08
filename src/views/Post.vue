@@ -156,12 +156,12 @@ async function handleSubmitComment(data: { author_name: string; author_email: st
       </footer>
 
       <!-- Related Posts -->
-      <section v-if="post.tags" class="space-y-8">
+      <section v-if="post && post.tags" class="space-y-8">
         <h2 class="writer-heading text-2xl">Related articles</h2>
         <div class="grid md:grid-cols-2 gap-6">
           <article
             v-for="relatedPost in store.posts
-              .filter(p => p.id !== post.id && p.tags?.some(t => post.tags?.includes(t)))
+              .filter(p => p.id !== post!.id && p.tags?.some(t => post!.tags?.includes(t)))
               .slice(0, 2)"
             :key="relatedPost.id"
             class="writer-card p-6 group"
