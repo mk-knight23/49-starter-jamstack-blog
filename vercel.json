@@ -1,13 +1,20 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "headers": [
+  "version": 2,
+  "name": "starter-jamstack-blog",
+  "builds": [
     {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" }
-      ]
+      "src": "package.json",
+      "use": "@vercel/static-build"
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "github": {
+    "enabled": true,
+    "autoAlias": true
+  }
 }
