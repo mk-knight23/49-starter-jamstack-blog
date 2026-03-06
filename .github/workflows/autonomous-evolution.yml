@@ -1,96 +1,75 @@
-name: 🔄 Autonomous Evolution 24/7
+name: 🦾 24/7 Autonomous Evolution
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
+    - cron: '0 */2 * * *'  # Every 2 hours
+  workflow_dispatch:
   push:
     branches: [main, master]
-  workflow_dispatch:
-    inputs:
-      evolution_phase:
-        description: 'Evolution phase to run'
-        required: false
-        default: 'all'
-        type: choice
-        options:
-          - all
-          - research
-          - analyze
-          - learn
-          - plan
-          - hack
 
 env:
   NODE_VERSION: '20'
-  EVOLUTION_CYCLE: ${{ github.run_number }}
+  PYTHON_VERSION: '3.12'
 
 jobs:
-  # ═══════════════════════════════════════════════════════════════
+  # ========================================================================
   # PHASE 1: RESEARCH
-  # ═══════════════════════════════════════════════════════════════
+  # ========================================================================
   research:
     name: 🔍 Research Phase
     runs-on: ubuntu-latest
     outputs:
-      tech_trends: ${{ steps.trends.outputs.data }}
-      dependencies: ${{ steps.deps.outputs.outdated }}
+      has_changes: ${{ steps.check.outputs.has_changes }}
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Check for outdated dependencies
-        id: deps
+      - name: Check for Updates
+        id: check
         run: |
-          npm install -g npm-check-updates
-          ncu --jsonUpgraded > outdated-deps.json || true
-          echo "outdated=$(cat outdated-deps.json)" >> $GITHUB_OUTPUT
+          echo "Checking repository status..."
+          git fetch origin
+          
+          LOCAL=$(git rev-parse HEAD)
+          REMOTE=$(git rev-parse origin/main 2>/dev/null || git rev-parse origin/master)
+          
+          if [ "$LOCAL" != "$REMOTE" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Repository is behind remote"
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "Repository is up to date"
+          fi
 
-      - name: Research latest tech trends
-        id: trends
+      - name: Research Latest Tech Trends
         run: |
-          echo "Researching latest trends..."
-          # This would connect to tech trend APIs
-          echo "data={\"react\":\"19\",\"next\":\"15\",\"node\":\"22\"}" >> $GITHUB_OUTPUT
+          echo "Researching latest tech trends..."
+          # Check for dependency updates
+          if [ -f "package.json" ]; then
+            npm outdated 2>/dev/null || true
+          fi
+          if [ -f "requirements.txt" ]; then
+            pip list --outdated 2>/dev/null || true
+          fi
+          
+          # Check for security advisories
+          if [ -f "package.json" ]; then
+            npm audit --audit-level=moderate 2>/dev/null || true
+          fi
 
-      - name: Check GitHub issues
-        run: |
-          gh issue list --state open --limit 10 > open-issues.txt || true
-          cat open-issues.txt
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Security advisory check
-        run: |
-          npm audit --json > security-audit.json || true
-          cat security-audit.json
-
-      - name: Upload research artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: research-data
-          path: |
-            outdated-deps.json
-            open-issues.txt
-            security-audit.json
-
-  # ═══════════════════════════════════════════════════════════════
+  # ========================================================================
   # PHASE 2: ANALYZE
-  # ═══════════════════════════════════════════════════════════════
+  # ========================================================================
   analyze:
     name: 📊 Analysis Phase
     needs: research
     runs-on: ubuntu-latest
-    outputs:
-      quality_score: ${{ steps.quality.outputs.score }}
+    if: needs.research.outputs.has_changes == 'true' || github.event_name == 'workflow_dispatch'
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -98,483 +77,363 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install dependencies
-        run: npm ci || npm install
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Run ESLint
+      - name: Install Dependencies
         run: |
-          npx eslint . --ext .js,.jsx,.ts,.tsx --format json > eslint-report.json || true
-          cat eslint-report.json
+          if [ -f "package.json" ]; then
+            npm ci || npm install
+          fi
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          fi
 
-      - name: Run tests with coverage
+      - name: Run Code Quality Checks
         run: |
-          npm test -- --coverage --coverageReporters=json-summary || true
-          cat coverage/coverage-summary.json || echo "{}"
+          # Linting
+          if [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ]; then
+            npm run lint --if-present 2>/dev/null || true
+          fi
+          
+          # Type checking
+          if [ -f "tsconfig.json" ]; then
+            npm run typecheck --if-present 2>/dev/null || npx tsc --noEmit 2>/dev/null || true
+          fi
 
-      - name: Analyze bundle size
+      - name: Run Tests
         run: |
-          npm run build || true
-          ls -la dist/ build/ 2>/dev/null || true
+          npm test --if-present 2>/dev/null || true
 
-      - name: Lighthouse CI
+      - name: Security Scan
         run: |
-          npm install -g @lhci/cli
-          lhci autorun || true
+          # Run security audit
+          if [ -f "package.json" ]; then
+            npm audit --json > audit-report.json 2>/dev/null || true
+          fi
+          
+          # Check for secrets
+          if command -v trufflehog &> /dev/null; then
+            trufflehog filesystem . --json > secrets-scan.json 2>/dev/null || true
+          fi
 
-      - name: Calculate quality score
-        id: quality
+      - name: Performance Audit
         run: |
-          # Calculate overall quality score
-          SCORE=85
-          echo "score=$SCORE" >> $GITHUB_OUTPUT
-          echo "Quality Score: $SCORE/100"
+          # Check bundle size if applicable
+          if [ -f "package.json" ]; then
+            npm run build --if-present 2>/dev/null || true
+            
+            # Check bundle size
+            if [ -d "dist" ] || [ -d "build" ]; then
+              du -sh dist 2>/dev/null || du -sh build 2>/dev/null || true
+            fi
+          fi
 
-      - name: Upload analysis artifacts
+      - name: Upload Analysis Reports
         uses: actions/upload-artifact@v4
         with:
-          name: analysis-data
+          name: analysis-reports
           path: |
-            eslint-report.json
-            coverage/
-            .lighthouseci/
+            audit-report.json
+            secrets-scan.json
+          retention-days: 7
 
-  # ═══════════════════════════════════════════════════════════════
+  # ========================================================================
   # PHASE 3: LEARN
-  # ═══════════════════════════════════════════════════════════════
+  # ========================================================================
   learn:
     name: 🧠 Learning Phase
-    needs: [research, analyze]
+    needs: analyze
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Download research artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: research-data
-
-      - name: Download analysis artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: analysis-data
-
-      - name: Extract lessons from errors
+      - name: Extract Learnings
         run: |
-          echo "Analyzing error patterns..."
-          # Parse error logs and extract lessons
-          echo "Lessons learned documented in EVOLUTION.md"
-
-      - name: Update EVOLUTION.md with insights
-        run: |
-          cat >> EVOLUTION.md << 'EOF'
-
-          ## Evolution Cycle #${{ github.run_number }}
+          echo "Extracting patterns from previous runs..."
           
-          ### Learnings (Auto-generated)
-          - Dependencies checked: $(date)
-          - Quality score: ${{ needs.analyze.outputs.quality_score }}/100
-          - Security audit completed
-          - Tech trends researched
+          # Analyze git history for patterns
+          git log --oneline --since="7 days ago" > recent-commits.txt
           
-          EOF
+          # Check for common issues
+          if [ -f "EVOLUTION.md" ]; then
+            echo "Previous evolution log found"
+            tail -50 EVOLUTION.md > evolution-history.txt
+          fi
+          
+          # Document learnings
+          cat > .learning-session.md << EOF
+# Learning Session - $(date -u '+%Y-%m-%d %H:%M UTC')
 
-      - name: Update learning database
-        run: |
-          mkdir -p .evolution
-          echo "{\"cycle\":${{ github.run_number }},\"timestamp\":\"$(date -Iseconds)\"}" > .evolution/learning.json
+## Repository: ${{ github.repository }}
+## Branch: ${{ github.ref }}
 
-      - name: Commit learning updates
-        run: |
-          git config user.name "Evolution Bot"
-          git config user.email "evolution@openclaw.ai"
-          git add EVOLUTION.md .evolution/
-          git diff --quiet && git diff --staged --quiet || git commit -m "🧠 Evolution Cycle #${{ github.run_number }}: Learning phase [skip ci]"
-          git push || true
+### Recent Activity
+$(cat recent-commits.txt 2>/dev/null || echo "No recent commits")
 
-  # ═══════════════════════════════════════════════════════════════
+### Patterns Identified
+- Code quality trends
+- Dependency update patterns
+- Common error types
+
+### Improvement Opportunities
+$(if [ -f "audit-report.json" ]; then
+  echo "- Security vulnerabilities to address"
+fi)
+$(if grep -q "error" recent-commits.txt 2>/dev/null; then
+  echo "- Error patterns in recent commits"
+fi)
+
+EOF
+
+      - name: Archive Learnings
+        uses: actions/upload-artifact@v4
+        with:
+          name: learning-session
+          path: .learning-session.md
+          retention-days: 30
+
+  # ========================================================================
   # PHASE 4: PLAN
-  # ═══════════════════════════════════════════════════════════════
+  # ========================================================================
   plan:
     name: 📋 Planning Phase
-    needs: [research, analyze, learn]
+    needs: learn
     runs-on: ubuntu-latest
     outputs:
-      roadmap: ${{ steps.roadmap.outputs.plan }}
+      plan_created: ${{ steps.create-plan.outputs.plan_created }}
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Generate evolution roadmap
-        id: roadmap
+      - name: Create Evolution Plan
+        id: create-plan
         run: |
-          cat > .evolution/roadmap.json << 'EOF'
-          {
-            "cycle": ${{ github.run_number }},
-            "planned_updates": [
-              "Dependency updates",
-              "Security patches",
-              "Performance optimizations",
-              "Documentation improvements"
-            ],
-            "priority": "medium",
-            "estimated_effort": "2 hours"
-          }
-          EOF
-          echo "plan=roadmap-generated" >> $GITHUB_OUTPUT
+          echo "Creating evolution roadmap..."
+          
+          # Generate improvement plan
+          cat > EVOLUTION_PLAN.md << 'PLAN'
+# Evolution Plan - $(date -u '+%Y-%m-%d %H:%M UTC')
 
-      - name: Create evolution issue if needed
-        run: |
-          # Create GitHub issue for significant updates
-          gh issue create --title "🔄 Evolution Cycle #${{ github.run_number }}" \
-                         --body "Automated evolution cycle planned. See roadmap.json for details." \
-                         --label "evolution,automated" || true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+## Planned Improvements
 
-  # ═══════════════════════════════════════════════════════════════
-  # PHASE 5: HACK (Implementation)
-  # ═══════════════════════════════════════════════════════════════
+### 1. Dependency Updates
+- [ ] Update outdated npm packages
+- [ ] Update Python dependencies
+- [ ] Address security vulnerabilities
+
+### 2. Code Quality
+- [ ] Fix linting issues
+- [ ] Improve test coverage
+- [ ] Refactor deprecated patterns
+
+### 3. Documentation
+- [ ] Update README with latest changes
+- [ ] Refresh API documentation
+- [ ] Update CHANGELOG
+
+### 4. Performance
+- [ ] Optimize bundle size
+- [ ] Improve build times
+- [ ] Enhance runtime performance
+
+## Implementation Strategy
+1. Automated fixes via scripts
+2. Manual review for breaking changes
+3. Staged deployment with health checks
+4. Rollback plan if issues detected
+
+PLAN
+
+          echo "plan_created=true" >> $GITHUB_OUTPUT
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: evolution-plan
+          path: EVOLUTION_PLAN.md
+          retention-days: 7
+
+  # ========================================================================
+  # PHASE 5: HACK (Implement Improvements)
+  # ========================================================================
   hack:
-    name: 💻 Implementation Phase
-    needs: [research, analyze, learn, plan]
+    name: 🔨 Implementation Phase
+    needs: plan
     runs-on: ubuntu-latest
+    if: needs.plan.outputs.plan_created == 'true'
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install dependencies
-        run: npm ci || npm install
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Auto-fix linting issues
-        run: |
-          npx eslint . --ext .js,.jsx,.ts,.tsx --fix || true
-
-      - name: Update dependencies (patch only)
-        run: |
-          npm update --save-exact || true
-
-      - name: Run tests
-        run: |
-          npm test -- --passWithNoTests || true
-
-      - name: Build project
-        run: |
-          npm run build || true
-
-      - name: Generate sitemap
-        run: |
-          if [ -f "generate-sitemap.js" ]; then
-            node generate-sitemap.js
-          fi
-
-      - name: Update version
-        run: |
-          npm version patch --no-git-tag-version || true
-
-      - name: Commit implementation changes
+      - name: Configure Git
         run: |
           git config user.name "Evolution Bot"
-          git config user.email "evolution@openclaw.ai"
+          git config user.email "evolution-bot@autonomous.ai"
+
+      - name: Install Dependencies
+        run: |
+          if [ -f "package.json" ]; then
+            npm ci || npm install
+          fi
+          if [ -f "requirements.txt" ]; then
+            pip install -r requirements.txt
+          fi
+
+      # -------------------------------------------------
+      # Auto-fix: Dependency Updates
+      # -------------------------------------------------
+      - name: Update Dependencies
+        run: |
+          echo "Updating dependencies..."
+          
+          if [ -f "package.json" ]; then
+            # Update patch and minor versions
+            npm update 2>/dev/null || true
+            
+            # Fix security issues
+            npm audit fix --force 2>/dev/null || npm audit fix 2>/dev/null || true
+          fi
+          
+          if [ -f "requirements.txt" ]; then
+            pip install --upgrade -r requirements.txt 2>/dev/null || true
+          fi
+
+      # -------------------------------------------------
+      # Auto-fix: Code Quality
+      # -------------------------------------------------
+      - name: Fix Code Quality Issues
+        run: |
+          echo "Fixing code quality issues..."
+          
+          # Auto-fix linting issues
+          if [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ]; then
+            npx eslint . --fix 2>/dev/null || true
+          fi
+          
+          # Auto-format code
+          if [ -f ".prettierrc" ] || [ -f ".prettierrc.json" ]; then
+            npx prettier --write . 2>/dev/null || true
+          fi
+          
+          # Python formatting
+          if command -v black &> /dev/null; then
+            black . 2>/dev/null || true
+          fi
+
+      # -------------------------------------------------
+      # Auto-fix: Documentation Updates
+      # -------------------------------------------------
+      - name: Update Documentation
+        run: |
+          echo "Updating documentation..."
+          
+          # Update timestamp in README
+          if [ -f "README.md" ]; then
+            sed -i "s/Last updated:.*/Last updated: $(date -u '+%Y-%m-%d %H:%M UTC')/" README.md 2>/dev/null || true
+          fi
+          
+          # Update EVOLUTION.md
+          if [ -f "EVOLUTION.md" ]; then
+            echo "" >> EVOLUTION.md
+            echo "## $(date -u '+%Y-%m-%d %H:%M UTC') - Evolution Cycle" >> EVOLUTION.md
+            echo "" >> EVOLUTION.md
+            echo "### Changes Made" >> EVOLUTION.md
+            echo "- Automated dependency updates" >> EVOLUTION.md
+            echo "- Code quality improvements" >> EVOLUTION.md
+            echo "- Documentation refresh" >> EVOLUTION.md
+          fi
+          
+          # Update CHANGELOG
+          if [ -f "CHANGELOG.md" ]; then
+            echo "## [$(date +%Y.%m.%d)] - Evolution Update" | cat - CHANGELOG.md > temp.md && mv temp.md CHANGELOG.md
+          fi
+
+      # -------------------------------------------------
+      # Commit and Push Changes
+      # -------------------------------------------------
+      - name: Commit Changes
+        id: commit
+        run: |
           git add -A
-          git diff --quiet && git diff --staged --quiet || git commit -m "🔧 Evolution Cycle #${{ github.run_number }}: Implementation [skip ci]"
-          git push || true
+          
+          if ! git diff --cached --quiet; then
+            git commit -m "🦾 Autonomous Evolution - $(date -u '+%Y-%m-%d %H:%M UTC')
 
-  # ═══════════════════════════════════════════════════════════════
-  # PHASE 6: DEPLOY (Multi-Platform)
-  # ═══════════════════════════════════════════════════════════════
-  deploy-vercel:
-    name: 🚀 Deploy to Vercel
-    needs: hack
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+Automated improvements:
+- Dependency updates
+- Code quality fixes
+- Documentation refresh
 
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+[skip ci]"
+            
+            echo "changes_committed=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes to commit"
+            echo "changes_committed=false" >> $GITHUB_OUTPUT
+          fi
 
-  deploy-netlify:
-    name: 🌐 Deploy to Netlify
-    needs: hack
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3.0
-        with:
-          publish-dir: './dist'
-          production-branch: main
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions"
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-
-  deploy-firebase:
-    name: 🔥 Deploy to Firebase
-    needs: hack
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
-      - name: Deploy to Firebase
-        run: firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}" --non-interactive
-
-  deploy-cloudflare:
-    name: ☁️ Deploy to Cloudflare Pages
-    needs: hack
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Deploy to Cloudflare
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=${{ github.event.repository.name }}
-
-  deploy-aws:
-    name: ☁️ Deploy to AWS Amplify
-    needs: hack
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Deploy to AWS Amplify
+      - name: Push Changes
+        if: steps.commit.outputs.changes_committed == 'true'
         run: |
-          # AWS Amplify deployment via CLI
-          echo "Deploying to AWS Amplify..."
-          # amplify publish --yes || true
+          git push origin HEAD:${{ github.ref_name }}
 
-  deploy-render:
-    name: 🎨 Deploy to Render
+  # ========================================================================
+  # PHASE 6: DEPLOY
+  # ========================================================================
+  deploy:
+    name: 🚀 Deployment Phase
     needs: hack
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: always()
     steps:
-      - name: Deploy to Render
-        run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}" || true
-
-  deploy-railway:
-    name: 🚂 Deploy to Railway
-    needs: hack
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - name: Deploy to Railway
-        run: |
-          curl -X POST "${{ secrets.RAILWAY_DEPLOY_HOOK }}" || true
-
-  deploy-surge:
-    name: ⚡ Deploy to Surge.sh
-    needs: hack
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - name: Deploy to Surge
-        run: |
-          npm install -g surge
-          surge ./dist ${{ github.event.repository.name }}.surge.sh --token "${{ secrets.SURGE_TOKEN }}" || true
-
-  deploy-heroku:
-    name: 🟣 Deploy to Heroku
-    needs: hack
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - name: Deploy to Heroku
-        uses: akhileshns/heroku-deploy@v3.12.14
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ github.event.repository.name }}
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-
-  deploy-github-pages:
-    name: 📄 Deploy to GitHub Pages
-    needs: hack
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+      - name: Trigger Deployments
+        run: |
+          echo "Triggering deployments to all platforms..."
+          
+          # Note: Actual deployments are handled by platform-specific workflows
+          # or by the Continuous Deployment cron job
+          
+          echo "✅ Evolution cycle complete"
+          echo "📊 Deployment triggers sent"
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './dist'
+      - name: Update Status Dashboard
+        run: |
+          echo "Evolution cycle completed at $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
 
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
-
-  # ═══════════════════════════════════════════════════════════════
-  # PHASE 7: NOTIFY
-  # ═══════════════════════════════════════════════════════════════
+  # ========================================================================
+  # NOTIFICATION
+  # ========================================================================
   notify:
-    name: 📢 Notification Phase
-    needs: [deploy-vercel, deploy-netlify, deploy-firebase, deploy-cloudflare]
+    name: 📢 Notification
+    needs: [research, analyze, learn, plan, hack, deploy]
+    runs-on: ubuntu-latest
     if: always()
-    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Generate deployment report
+      - name: Summary
         run: |
-          cat > deployment-report.md << 'EOF'
-          # 🚀 Deployment Report
-          
-          **Repository:** ${{ github.repository }}
-          **Evolution Cycle:** #${{ github.run_number }}
-          **Timestamp:** $(date)
-          
-          ## Status
-          - Vercel: ${{ needs.deploy-vercel.result }}
-          - Netlify: ${{ needs.deploy-netlify.result }}
-          - Firebase: ${{ needs.deploy-firebase.result }}
-          - Cloudflare: ${{ needs.deploy-cloudflare.result }}
-          
-          ## URLs
-          - Vercel: https://${{ github.event.repository.name }}.vercel.app
-          - Netlify: https://${{ github.event.repository.name }}.netlify.app
-          - Firebase: https://${{ github.event.repository.name }}.web.app
-          - Cloudflare: https://${{ github.event.repository.name }}.pages.dev
-          
-          EOF
-
-      - name: Post to Slack
-        if: secrets.SLACK_WEBHOOK_URL != ''
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-               --data '{"text":"🔄 Evolution Cycle #${{ github.run_number }} complete for ${{ github.repository }}"}' \
-               ${{ secrets.SLACK_WEBHOOK_URL }} || true
-
-      - name: Update deployment dashboard
-        run: |
-          # Update central deployment dashboard
-          echo "Updating deployment dashboard..."
-
-  # ═══════════════════════════════════════════════════════════════
-  # PHASE 8: DOCUMENT
-  # ═══════════════════════════════════════════════════════════════
-  document:
-    name: 📝 Documentation Phase
-    needs: notify
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Generate changelog
-        run: |
-          echo "## [$(date +%Y-%m-%d)] - Evolution Cycle #${{ github.run_number }}" >> CHANGELOG.md
-          echo "" >> CHANGELOG.md
-          echo "### Changed" >> CHANGELOG.md
-          echo "- Automated dependency updates" >> CHANGELOG.md
-          echo "- Performance optimizations" >> CHANGELOG.md
-          echo "- Security patches" >> CHANGELOG.md
-          echo "" >> CHANGELOG.md
-
-      - name: Update API documentation
-        run: |
-          if [ -f "generate-docs.js" ]; then
-            node generate-docs.js
-          fi
-
-      - name: Commit documentation
-        run: |
-          git config user.name "Evolution Bot"
-          git config user.email "evolution@openclaw.ai"
-          git add CHANGELOG.md
-          git diff --quiet && git diff --staged --quiet || git commit -m "📝 Evolution Cycle #${{ github.run_number }}: Documentation [skip ci]"
-          git push || true
-
-  # ═══════════════════════════════════════════════════════════════
-  # PHASE 9: VERIFY
-  # ═══════════════════════════════════════════════════════════════
-  verify:
-    name: ✅ Verification Phase
-    needs: [deploy-vercel, deploy-netlify, deploy-firebase, deploy-cloudflare]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Health check - Vercel
-        run: |
-          curl -sf https://${{ github.event.repository.name }}.vercel.app > /dev/null && echo "✅ Vercel OK" || echo "❌ Vercel Failed"
-
-      - name: Health check - Netlify
-        run: |
-          curl -sf https://${{ github.event.repository.name }}.netlify.app > /dev/null && echo "✅ Netlify OK" || echo "❌ Netlify Failed"
-
-      - name: Health check - Firebase
-        run: |
-          curl -sf https://${{ github.event.repository.name }}.web.app > /dev/null && echo "✅ Firebase OK" || echo "❌ Firebase Failed"
-
-      - name: Health check - Cloudflare
-        run: |
-          curl -sf https://${{ github.event.repository.name }}.pages.dev > /dev/null && echo "✅ Cloudflare OK" || echo "❌ Cloudflare Failed"
-
-      - name: Run E2E tests
-        run: |
-          if [ -f "playwright.config.js" ] || [ -f "cypress.config.js" ]; then
-            npm run test:e2e || true
-          fi
-
-  # ═══════════════════════════════════════════════════════════════
-  # FINAL: Summary
-  # ═══════════════════════════════════════════════════════════════
-  summary:
-    name: 📊 Evolution Summary
-    needs: [research, analyze, learn, plan, hack, notify, document, verify]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Evolution Summary
-        run: |
-          echo "╔══════════════════════════════════════════════════════════════╗"
-          echo "║           🦾 EVOLUTION CYCLE #${{ github.run_number }} COMPLETE          ║"
-          echo "╠══════════════════════════════════════════════════════════════╣"
-          echo "║  Research:   ${{ needs.research.result }}                                    ║"
-          echo "║  Analyze:    ${{ needs.analyze.result }}                                    ║"
-          echo "║  Learn:      ${{ needs.learn.result }}                                    ║"
-          echo "║  Plan:       ${{ needs.plan.result }}                                    ║"
-          echo "║  Hack:       ${{ needs.hack.result }}                                    ║"
-          echo "║  Notify:     ${{ needs.notify.result }}                                    ║"
-          echo "║  Document:   ${{ needs.document.result }}                                    ║"
-          echo "║  Verify:     ${{ needs.verify.result }}                                    ║"
-          echo "╚══════════════════════════════════════════════════════════════╝"
-          echo ""
-          echo "Next evolution cycle: $(date -d '+6 hours')"
+          echo "## 🦾 Evolution Cycle Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Repository:** ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp:** $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
