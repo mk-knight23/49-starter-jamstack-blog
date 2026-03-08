@@ -29,7 +29,7 @@
     "gray-matter": "^4.0.3",
     "highlight.js": "^11.11.1",
     "jsonwebtoken": "^9.0.3",
-    "lucide-vue-next": "^0.468.0",
+    "lucide-vue-next": "^0.577.0",
     "markdown-it": "^14.1.1",
     "markdown-it-highlightjs": "^4.2.0",
     "pinia": "^2.3.0",
