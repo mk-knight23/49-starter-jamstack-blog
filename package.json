@@ -4,6 +4,7 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
+    "production": "npm run build && npm start",
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:client\"",
     "dev:api": "tsx src/server/api/index.ts",
     "dev:client": "vite",

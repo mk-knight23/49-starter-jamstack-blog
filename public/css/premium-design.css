@@ -1,0 +1,22 @@
+:root {
+    --premium-bg: #0d1117;
+    --premium-accent: #00ffcc;
+    --premium-glass: rgba(255, 255, 255, 0.05);
+    --premium-border: rgba(255, 255, 255, 0.1);
+    --premium-text: #e6edf3;
+    --premium-shadow: 0 8px 32px 0 rgba(0, 255, 204, 0.1);
+}
+
+.premium-card {
+    background: var(--premium-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--premium-border);
+    border-radius: 12px;
+    box-shadow: var(--premium-shadow);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: var(--premium-accent);
+}
