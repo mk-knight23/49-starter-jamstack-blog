@@ -112,3 +112,10 @@ MIT License - see LICENSE file for details
 ---
 
 Built with ❤️ by mk-knight23
+## Security
+
+This project follows security best practices:
+- No hardcoded credentials
+- Dependency scanning enabled
+- Security headers configured
+- Regular security audits performed
